@@ -26,11 +26,26 @@ describe('CoursesService', () => {
 
       const course = courses.find((course) => course.id === 12);
       expect(course).toBeTruthy('No course with ID 12 found');
-      expect(course.titles.description).toBe('Angular Testing Course');      
+      expect(course.titles.description).toBe('Angular Testing Course');
     });
 
     const req = httpTestingController.expectOne('/api/courses');
     expect(req.request.method).toEqual('GET');
     req.flush({ payload: Object.values(COURSES) });
+  });
+
+  it('should retrive a course by id', () => {
+    coursesService.findCourseById(12).subscribe((course) => {
+      expect(course).toBeTruthy('No course found');
+      expect(course.titles.description).toBe('Angular Testing Course');
+    });
+
+    const req = httpTestingController.expectOne('/api/courses/12');
+    expect(req.request.method).toEqual('GET');
+    req.flush(COURSES[12]);
+  });
+
+  afterEach(() => {
+    httpTestingController.verify();
   });
 });
