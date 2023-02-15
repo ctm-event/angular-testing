@@ -29,21 +29,35 @@ describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
   let component: HomeComponent;
   let el: DebugElement;
+  let coursesService: any;
+
+  const beginerCourses = setupCourses().filter(
+    (course) => course.category == 'BEGINNER'
+  );
+
+  const advancedCourses = setupCourses().filter(
+    (course) => course.category == 'ADVANCED'
+  );
 
   beforeEach(waitForAsync(() => {
-    const coursesServiceSpy =  jasmine.createSpyObj 
+    const coursesServiceSpy = jasmine.createSpyObj('CoursesService', [
+      'findAllCourses'
+    ]);
     TestBed.configureTestingModule({
       imports: [CoursesModule, NoopAnimationsModule],
-      providers: [{
-        provide: CoursesService,
-        useValue: coursesServiceSpy
-      }]
+      providers: [
+        {
+          provide: CoursesService,
+          useValue: coursesServiceSpy
+        }
+      ]
     })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(HomeComponent);
         component = fixture.componentInstance;
         el = fixture.debugElement;
+        coursesService = TestBed.inject(CoursesService);
       });
   }));
 
@@ -51,19 +65,43 @@ describe('HomeComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  xit('should display only beginner courses', () => {
-    pending();
+  it('should display only beginner courses', () => {
+    coursesService.findAllCourses.and.returnValue(of(beginerCourses));
+    fixture.detectChanges();
+    const tabs = el.queryAll(By.css('.mdc-tab.mat-mdc-tab'));
+    expect(tabs.length).toBe(1, 'Unexpected number of tabs found');
   });
 
-  xit('should display only advanced courses', () => {
-    pending();
+  it('should display only advanced courses', () => {
+    coursesService.findAllCourses.and.returnValue(of(advancedCourses));
+    fixture.detectChanges();
+    const tab = el.query(By.css('.mdc-tab.mat-mdc-tab')),
+      tabContent = el.query(By.css('.mdc-tab__content > .mdc-tab__text-label'));
+    expect(tabContent.nativeElement.innerText).toBe(
+      'Advanced',
+      'Expected tab not found'
+    );
   });
 
-  xit('should display both tabs', () => {
-    pending();
+  it('should display both tabs', () => {
+    coursesService.findAllCourses.and.returnValue(of(setupCourses()));
+    fixture.detectChanges();
+    const tabs = el.queryAll(By.css('.mdc-tab.mat-mdc-tab'));
+    expect(tabs.length).toBe(2);
   });
 
-  xit('should display advanced courses when tab clicked', () => {
-    pending();
+  it('should display advanced courses when tab clicked', () => {
+    coursesService.findAllCourses.and.returnValue(of(setupCourses()));
+    fixture.detectChanges();
+    const tabs = el.queryAll(By.css('.mdc-tab.mat-mdc-tab'));
+    expect(tabs.length).toBe(2);
+
+    click(tabs[1]);
+    fixture.detectChanges();
+
+    const title = el.query(By.css('mat-card-title'));
+    expect(title.nativeElement.innerText).toBe(
+      advancedCourses[0].titles.description
+    );
   });
 });

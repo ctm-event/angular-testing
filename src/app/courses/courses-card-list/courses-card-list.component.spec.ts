@@ -31,8 +31,6 @@ describe('CoursesCardListComponent', () => {
     fixture.detectChanges();
     const cards = el.queryAll(By.css('.course-card'));
 
-    console.log(el.nativeElement.outerHTML);
-
     expect(cards).toBeTruthy('Cound not find cards');
     expect(cards.length).toBe(12, 'Unexpected nubmer of courses');
   });
