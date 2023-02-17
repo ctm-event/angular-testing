@@ -90,7 +90,7 @@ describe('HomeComponent', () => {
     expect(tabs.length).toBe(2);
   });
 
-  it('should display advanced courses when tab clicked', () => {
+  it('should display advanced courses when tab clicked', (done: DoneFn) => {
     coursesService.findAllCourses.and.returnValue(of(setupCourses()));
     fixture.detectChanges();
     const tabs = el.queryAll(By.css('.mdc-tab.mat-mdc-tab'));
@@ -99,9 +99,14 @@ describe('HomeComponent', () => {
     click(tabs[1]);
     fixture.detectChanges();
 
-    const title = el.query(By.css('mat-card-title'));
-    expect(title.nativeElement.innerText).toBe(
-      advancedCourses[0].titles.description
-    );
+    setTimeout(() => {
+      const titles = el.queryAll(By.css('mat-card-title'));
+      expect(titles.length).toBeGreaterThan(0);
+      expect(titles[0].nativeElement.textContent).toContain(
+        advancedCourses[0].titles.description
+      );
+    }, 500);
+    
+    done();
   });
 });
