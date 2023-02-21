@@ -5,6 +5,7 @@ import {
   flush,
   flushMicrotasks,
   TestBed,
+  tick,
   waitForAsync
 } from '@angular/core/testing';
 import { CoursesModule } from '../courses.module';
@@ -90,23 +91,39 @@ describe('HomeComponent', () => {
     expect(tabs.length).toBe(2);
   });
 
-  it('should display advanced courses when tab clicked', (done: DoneFn) => {
+  it('should display advanced courses when tab clicked - fakeAsync', fakeAsync(() => {
     coursesService.findAllCourses.and.returnValue(of(setupCourses()));
     fixture.detectChanges();
-    const tabs = el.queryAll(By.css('.mdc-tab.mat-mdc-tab'));
-    expect(tabs.length).toBe(2);
+    const tabs = el.queryAll(By.css('.mat-mdc-tab'));
+    click(tabs[1]);
+    fixture.detectChanges();
+    flush();
+    
+    const titles = el.queryAll(
+      By.css('.mat-mdc-tab-body-active .mat-mdc-card-title')
+    );
+    expect(titles.length).toBeGreaterThan(0);
+    expect(titles[0].nativeElement.textContent).toContain(
+      advancedCourses[0].titles.description
+    );
+  }));
 
+  it('should display advanced courses when tab clicked - Async', waitForAsync(() => {
+    coursesService.findAllCourses.and.returnValue(of(setupCourses()));
+    fixture.detectChanges();
+    const tabs = el.queryAll(By.css('.mat-mdc-tab'));
     click(tabs[1]);
     fixture.detectChanges();
 
-    setTimeout(() => {
-      const titles = el.queryAll(By.css('mat-card-title'));
+    fixture.whenStable().then(() => {
+      console.log('called whenStable()');
+      const titles = el.queryAll(
+        By.css('.mat-mdc-tab-body-active .mat-mdc-card-title')
+      );
       expect(titles.length).toBeGreaterThan(0);
       expect(titles[0].nativeElement.textContent).toContain(
         advancedCourses[0].titles.description
       );
-    }, 500);
-    
-    done();
-  });
+    });
+  }));
 });
